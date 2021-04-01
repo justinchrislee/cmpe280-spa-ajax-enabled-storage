@@ -1,0 +1,239 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>SPA - Health Camp</title>
+        <meta name="CMPE 280 Student" content="SPA - Health Camp"/>
+        <link rel="stylesheet" href="SPA.css">
+    </head>
+    <body>
+            <div style="margin-left: 40%">
+                <form action="/patient_create" method="POST" enctype="multipart/form-data">
+                    <div style="text-align: center; background: gainsboro;">
+                        <header>Demographics</header>
+                    </div>
+        
+                    <div style="margin-top: 2%; margin-left: 20%;"> 
+                        <p>
+                            <label for="first_name">First Name:</label>
+                            <input type="text" id="first_name" name="first_name" required>
+                        </p>
+                        <br>
+                        <p>
+                            <label for="last_name">Last Name:</label>
+                            <input type="text" id="last_name" name="last_name" required>
+                        </p>
+                        <br>
+                        <p>
+                            <label for="gender">Gender</label>
+                            <select id="gender" name="gender" required>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            </select>
+                        </p>
+                        <br>
+                        <p>
+                            <label for="age">Age: </label>
+                            <input type="text" id="age" name="age" required>
+                        </p>
+                        <br>
+                        <p>
+                            <label for="photo">Upload photo: </label>
+                            <input type="file" id="photo" name="photo" required>
+                        </p>
+                        <br>
+                        <p>
+                            <label for="notes">Notes or other details: </label>
+                            <br>
+                            <textarea id="notes" name="notes" rows="10" cols="30" required>   
+                            </textarea>
+                        </p>
+                    </div>               
+    
+                    <div style="text-align: center; background: gainsboro;">
+                        <header>Health Vitals</header>
+                    </div>
+        
+                    <div style="margin-top: 2%; margin-left: 20%;">
+                        <p>
+                            <label for="height">Height:</label>
+                            <input type="text" id="height" name="height" required>
+                        </p>
+                        <br>
+                        <p>
+                            <label for="weight">Weight:</label>
+                            <input type="text" id="weight" name="weight" required>
+                        </p>
+                        <br>
+                        <p>
+                            <label for="body_temperature">Body Temperature:</label>
+                            <input type="text" id="body_temperature" name="body_temperature" required>
+                        </p>
+                        <br>
+                        <p>
+                            <label for="pulse_rate">Pulse Rate: </label>
+                            <input type="text" id="pulse_rate" name="pulse_rate" required>
+                        </p>
+                        <br>
+                        <p>
+                            <label for="bp">BP: </label>
+                            <input type="text" id="bp" name="bp" required>
+                        </p>
+                        <br>
+                        <p>
+                            <label for="medications">Medications: </label>
+                            <br>
+                            <textarea id="medications" name="medications" rows="10" cols="30" required>   
+                            </textarea>
+                        </p>
+                        <br>
+                        <p>
+                            <label for="other_details">Notes or other details: </label>
+                            <br>
+                            <textarea id="other_details" name="other_details" rows="10" cols="30" required>    
+                            </textarea>
+                        </p>
+                        <br>
+                        <button style="border: 1px solid white; background-color: #12BA1E; color: white; 
+                        width: 40%; margin-top: 5%; margin-bottom: 5%;" onclick="savePatientDetails();">Save</button>
+                        <p style="color: red;" id="error-message"></p> 
+                    </div>             
+                </form>
+            </div>
+
+            <div style="width: 50%; margin-left: 25%;">
+                <div style="text-align: center; background: gainsboro;">
+                    <header>Patient Details</header>
+                </div>
+    
+                <div style="margin-top: 2%;">
+                    <table id="patient-table">
+                        <tr>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Photo</th>
+                            <th>Medications</th>
+                            <th>Notes</th>
+                        </tr>
+                        
+                    </table>
+                </div>               
+            </div>
+    </body>
+    <script>
+    Storage.prototype.setObj = function(key, obj) {
+        return this.setItem(key, JSON.stringify(obj))
+    }
+
+    Storage.prototype.getObj = function(key) {
+        return JSON.parse(this.getItem(key))
+    }
+
+    var fr = new FileReader();
+
+    fr.onload = function() {
+        appendDetails('photo', fr.result);
+    }
+    
+    function savePatientDetails() {
+        if (allFieldsAreFilled()) {
+            var firstName = document.getElementById('first_name').value;
+            var lastName = document.getElementById('last_name').value;
+            var name = firstName + ' ' + lastName;
+            appendDetails('name', name);
+
+            var age = document.getElementById('age').value;
+            appendDetails('age', age);
+
+            var gender = document.getElementById('gender').value;
+            appendDetails('gender', gender);
+
+            var photo = document.getElementById('photo').files[0];
+            fr.readAsDataURL(photo);
+
+            var medications = document.getElementById('medications').value;
+            appendDetails('medications', medications);
+
+            var notes = document.getElementById('notes').value;
+            appendDetails('notes', notes);
+
+            location.href = "./SPA.html";
+        } else {
+            document.getElementById('error-message').innerHTML = "Please fill in ALL fields before saving."
+        }
+    }
+
+    function appendDetails(key, value) {
+        if (!localStorage.getItem(key)) {
+            var arr = [value]
+            localStorage.setObj(key, arr);
+        } else {
+            var values = localStorage.getObj(key);
+            values.push(value);
+            localStorage.setObj(key, values);
+        } 
+    }
+
+    /*
+    // https://stackoverflow.com/questions/36280818/how-to-convert-file-to-base64-in-javascript
+    const toBase64 = file => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    }); */
+
+    function renderPatientDetailsTable() {
+        var table = document.getElementById('patient-table');
+        var names = localStorage.getObj('name');
+
+        if (names) { 
+            var ages = localStorage.getObj('age');
+            var genders = localStorage.getObj('gender');
+            var photos = localStorage.getObj('photo');
+            var medications = localStorage.getObj('medications');
+            var notes = localStorage.getObj('notes');
+
+            for (let i = 0; i < names.length; i++) {
+                var row = table.insertRow(i+1);
+
+                var cell0 = row.insertCell(0);
+                cell0.innerHTML = names[i];
+
+                var cell1 = row.insertCell(1);
+                cell1.innerHTML = ages[i];
+
+                var cell2 = row.insertCell(2);
+                cell2.innerHTML = genders[i];
+
+                var cell3 = row.insertCell(3);
+                var photo = photos[i];
+                cell3.innerHTML = `<image src=${photo} height='200' width='200'></image>`
+
+                var cell4 = row.insertCell(4);
+                cell4.innerHTML = medications[i];
+
+                var cell5 = row.insertCell(5);
+                cell5.innerHTML = notes[i];
+            }
+        }
+        
+    }
+
+    renderPatientDetailsTable();
+
+    function allFieldsAreFilled() {
+        var fields = ['first_name', 'last_name', 'age', 'photo', 'other_details', 
+        'height', 'weight', 'body_temperature', 'pulse_rate', 'bp', 'medications', 'notes'];
+
+        for (let i = 0; i < fields.length; i++) {
+            if (document.getElementById(fields[i]).value == "") {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    </script>
+</html>
